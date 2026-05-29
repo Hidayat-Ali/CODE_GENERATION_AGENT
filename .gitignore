@@ -1,0 +1,20 @@
+# Virtual environments
+.venv/
+venv/
+
+# Environment variables
+.env
+backend/.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Generated files
+backend/workspace/generated/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
