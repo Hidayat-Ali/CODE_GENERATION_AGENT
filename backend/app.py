@@ -3,11 +3,12 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from services.gemnnii_service import generate_response
 from fastapi.responses import StreamingResponse
-from tools.file_tools import write_file
+from tools.file_tools import write_file,read_file,is_safe_filename,list_files
 
 app = FastAPI()
 
 class ChatRequest(BaseModel):
+    filename: str 
     message: str
 
 @app.get("/")
@@ -33,5 +34,7 @@ def generate_file(req:ChatRequest):
         {req.message}
         """
     code = "".join(generate_response(prompt))
-    file_path = write_file("generated_code.py", code)
+    if not is_safe_filename(req.filename):
+        return {"error": "Invalid filename"}
+    file_path = write_file(req.filename, code)
     return {"file_path": str(file_path)}
