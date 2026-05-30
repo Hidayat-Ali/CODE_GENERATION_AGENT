@@ -23,10 +23,30 @@ An AI-powered code generation agent built using:
 
 ## Roadmap
 
+### v0.1
+
+- [x] FastAPI Backend
 - [x] Gemini Integration
 - [x] Streaming Responses
 - [x] File Generation
-- [ ] File Reading
+
+### v0.2
+
+- [x] Read File Tool
+- [x] List Files Tool
+- [x] Workspace Management
+
+### v0.3
+
 - [ ] LangGraph Agent
+- [ ] Tool Calling
+- [ ] Multi-step Planning
+
+### v0.4
+
 - [ ] Docker Sandbox
-- [ ] Frontend
+- [ ] Code Execution
+
+### v1.0
+
+- [ ] Full AI Agent
