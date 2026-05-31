@@ -6,5 +6,3 @@ result = graph.invoke(
         "filename": "calculator.py"
     }
 )
-
-print(result)
