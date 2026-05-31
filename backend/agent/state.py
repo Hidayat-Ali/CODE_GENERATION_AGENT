@@ -8,3 +8,8 @@ class AgentState(TypedDict):
     reviewed_result:str
     plan: str
     file_path:str
+    files: list[str]
+    current_file: str
+    current_file_index: int
+    generated_files: list[str]
+    project_context: str
