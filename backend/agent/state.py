@@ -13,3 +13,6 @@ class AgentState(TypedDict):
     current_file_index: int
     generated_files: list[str]
     project_context: str
+    execution_result: str
+    execution_error: str
+    execution_success: bool

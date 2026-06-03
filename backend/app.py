@@ -1,4 +1,3 @@
-from click import prompt
 from fastapi import FastAPI
 from pydantic import BaseModel
 from services.gemnnii_service import generate_response
@@ -8,7 +7,7 @@ from tools.file_tools import write_file,read_file,is_safe_filename,list_files
 app = FastAPI()
 
 class ChatRequest(BaseModel):
-    filename: str 
+    filename: str
     message: str
 
 @app.get("/")
