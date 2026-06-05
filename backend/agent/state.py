@@ -16,3 +16,4 @@ class AgentState(TypedDict):
     execution_result: str
     execution_error: str
     execution_success: bool
+    retry_count: int

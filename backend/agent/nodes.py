@@ -8,6 +8,7 @@ from tools.file_tools import write_file, read_file
 
 
 def generate_code_node(state):
+    state.pop("reviewed_code", None)
     print("generating code for task")
 
     # prompt = f"""
@@ -23,9 +24,21 @@ def generate_code_node(state):
     #     generate_response(prompt)
     # )
 
-    state["generated_code"] = f"""
-from fastapi import FastAPI
-"""
+
+    if state["current_file"] == "requirements.txt":
+        state["generated_code"] = """
+    uvicorn
+    fastapi
+    sqlalchemy
+    psycopg2-binary
+    python-dotenv
+    """
+        return  state
+
+    state["generated_code"] = """
+    print(x)
+    print(c)
+    """
 
     return state
 
@@ -74,10 +87,13 @@ def fix_code_node(state):
     # fixed_code = "".join(
     #     generate_response(prompt)
     # )
-
-    state["reviewed_code"] = """
-print("Fixed code executed")
-"""
+    if state["current_file"] == "requirements.txt":
+        state["reviewed_code"] = "uvicorn fastapi sqlalchemy psycopg2-binary python-dotenv"
+    else:
+        state["reviewed_code"] = """print("Fixed code executed")"""
+    state['retry_count'] = (
+        state.get("retry_count", 0) + 1
+    )
 
     return state
 
@@ -130,6 +146,7 @@ main.py
 database.py
 models.py
 routes.py
+requirements.txt
 """
 
     state["plan"] = plan
@@ -147,6 +164,7 @@ routes.py
 
 
 def next_file_node(state):
+    state["retry_count"] = 0
     state["current_file_index"] += 1
     state["current_file"] = state["files"][state["current_file_index"]]
     return state
@@ -154,11 +172,17 @@ def next_file_node(state):
 
 def save_code_node(state):
     print("saving the code to a file")
+    print("CURRENT FILE:", state["current_file"])
+    print("GENERATED CODE:", state.get("generated_code"))
+    print("REVIEWED CODE:", state.get("reviewed_code"))
 
-    code_to_save = state.get(
-        "reviewed_code",
-        state["generated_code"]
-    )
+    if state["current_file"] == "requirements.txt":
+        code_to_save = state["generated_code"]
+    else:
+        code_to_save = state.get(
+            "reviewed_code",
+            state["generated_code"]
+        )
 
     file_path = write_file(
         state["current_file"],
@@ -170,7 +194,11 @@ def save_code_node(state):
     if "generated_files" not in state:
         state["generated_files"] = []
 
-    state["generated_files"].append(
+    if "generated_files" not in state:
+        state["generated_files"] = []
+
+    if state["current_file"] not in state["generated_files"]:
+        state["generated_files"].append(
         state["current_file"]
     )
 
@@ -213,6 +241,18 @@ def execute_code_node(state):
     print(
         f"Exectuting the {state['current_file']} in docker"
     )
+
+    # Skip execution for non-python files
+    if not state["current_file"].endswith(".py"):
+        print(
+            f"Skipping execution of {state['current_file']}"
+        )
+
+        state["execution_result"] = ""
+        state["execution_error"] = ""
+        state["execution_success"] = True
+
+        return state
 
     workspace_path = (
         Path.cwd() / "workspace/generated"
@@ -259,10 +299,12 @@ def route_after_execution_node(state):
     if state["execution_success"]:
         return "collect_context"
 
-    if is_dependency_error(
-        state["execution_error"]
-    ):
+    if is_dependency_error(state["execution_error"]):
         return "dependency_error"
+    if state.get("retry_count", 0) >= 3:
+        print("Maximum retry count reached")
+        return "dependency_error"
+    
 
     return "fix_code"
 
